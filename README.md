@@ -1,7 +1,7 @@
 # POSPair
   POSPair model is a simplifying representation for Natural Language Processing. POSPair Model represents data based on part-of-speech and relations between different part-of-speech. In POSPair model, Word pairs are the unit values generated with refrence to the context present in that sentence. Besides just closeness, word frequency or syntactic relatedness, POSPair model takes into account the actual form of relationship between words, which words are related and how they are related.
   
-## How It Works
+## How It Works:
 Words are the smallest elements. Based on their use and functions, words are categorized into several types of part-of-speech.
 1. Noun - Used to name persons, things, animals, places, ideas, or events.    **(Noun)**
 2. Pronoun - Functions as a replacement for Noun.                             **(Pronoun)**
@@ -36,9 +36,9 @@ Word pairs are generated with the refrence to the whole text. Word pairs can be 
 
 3. POSPair Functions:
 ```
-    1. POSPair.WordPairs(string)
-    2. POSPair.WordPairsWithValues(string)
-    3. POSPair.separateWordPair(string) [String should be word-pair]
+    1. POSPair.WordPairs(string) [Returns word-pairs]
+    2. POSPair.WordPairsWithValues(string) [Returns word-pairs with context]
+    3. POSPair.separateWordPair(string) [String should be word-pair][Returns list of words from word-pair]
 ```
 Example:
 ```Python
