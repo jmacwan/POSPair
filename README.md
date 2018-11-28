@@ -44,7 +44,15 @@ Example:
 ```Python
 import POSPair
 
-wordPairs = POSPair.WordPairs("POSPair model is a simplifying representation for natural language processing.")
+wordPairs = POSPair.WordPairs("POSPair model is a simplifying representation.")
+```
+Output:
+```
+'POSPair model'
+'model representation'
+'representation is'
+'representation a'
+'representation simplifying'
 ```
 
 Get in touch at pospair.contact@gmail.com for any queries or help.
