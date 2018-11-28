@@ -1,5 +1,5 @@
 # POSPair
-  POSPair model is a simplifying representation for natural language processing. POSPair Model represents data based on part-of-speech and relations between different part-of-speech. In POSPair model, Word pairs are the unit values generated with refrence to the context present in that sentence. Besides just closeness, word frequency or syntactic relatedness, POSPair model takes into account the actual form of relationship between words, which words are related and how they are related.
+  POSPair model is a simplifying representation for Natural Language Processing. POSPair Model represents data based on part-of-speech and relations between different part-of-speech. In POSPair model, Word pairs are the unit values generated with refrence to the context present in that sentence. Besides just closeness, word frequency or syntactic relatedness, POSPair model takes into account the actual form of relationship between words, which words are related and how they are related.
   
 ## How It Works
 Words are the smallest elements. Based on their use and functions, words are categorized into several types of part-of-speech.
