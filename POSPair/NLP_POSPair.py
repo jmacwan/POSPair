@@ -1,6 +1,16 @@
+import sys
+import os
 #Importing Stanford libraries
 from pycorenlp import StanfordCoreNLP
-nlp = StanfordCoreNLP('http://localhost:9000')
+nlp = StanfordCoreNLP('http://localhost:9000')  
+#Importing gensim libraries
+from POSPairWordEmbeddings.gensim.models import Word2Vec as POSPairWE
+sys.path.remove(sys.path[0])
+del sys.modules['gensim']
+del sys.modules['gensim.models.word2vec']
+del sys.modules['gensim.models']
+import re
+MAX_WORDS_IN_BATCH = 10000
 
 class NLP:
     
@@ -373,3 +383,99 @@ class NLP:
             else:
                 print("Input is not string")
                 return None
+
+class WordRepresentations:
+
+    def __SentenceIntoWords(text):
+        #Converting into sentences
+        try:
+            annotatedObject = nlp.annotate(text, properties = {
+            'annotators' : 'tokenize,parse,pos,depparse',
+            'outputFormat' : 'json'
+            })
+            Words = []
+            
+            #Iterating through annotated object to create sentences
+            for i in range(len(text)):
+                Words.append(annotatedObject['sentences'][0]['tokens'][i]['originalText'])  
+            return Words
+        except Exception as ex:
+            if(str(ex.args) == "('list index out of range',)"):
+                return Words
+            print("Error while annotating sentence - " + text)
+            return None
+
+    def POSPairWordEmbeddings(sentences=None, size=100, alpha=0.025,
+                 max_vocab_size=None, sample=1e-3, seed=1, workers=3, min_alpha=0.0001,
+                 sg=1, hs=0, negative=5, ns_exponent=0.75, cbow_mean=1, hashfxn=hash, iter=5, null_word=0,
+                 trim_rule=None, sorted_vocab=1, batch_words=10000, compute_loss=False, callbacks=(),
+                 max_final_vocab=None):
+        #Creating word embeddings for POSPair model
+        try:
+            #Pre-declared
+            window= 1
+            min_count= 1
+            
+            #Validating input as list of sentences
+            if (isinstance(sentences, (list, tuple))) == False:
+                print("Input is not list of sentences.")
+                return None
+
+            #Converting list of sentences into POSPair pairs
+            pospairs = []
+            for sentence in sentences:
+                pospairs.append(NLP.WordPairs(sentence))
+
+            pospairs = [e for e in pospairs if e is not None]
+
+            #Tokenizing POSPair pairs
+            tokenizedPOSPairs = []
+            for listOfPairs in pospairs:
+                for pairs in listOfPairs:
+                    for pair in pairs:
+                        tokenizedPOSPairs.append(WordRepresentations.__SentenceIntoWords(pair))
+
+            tokenizedPOSPairs = [e for e in tokenizedPOSPairs if e is not None]
+            
+            #Creating Word2Vec model
+            model = POSPairWE(tokenizedPOSPairs, corpus_file=None, size= size, alpha=alpha, window= window, min_count= min_count,
+                 max_vocab_size=max_vocab_size, sample=sample, seed=seed, workers=workers, min_alpha=min_alpha,
+                 sg=sg, hs=hs, negative=negative, ns_exponent=ns_exponent, cbow_mean=cbow_mean, hashfxn=hashfxn, iter=iter, null_word=null_word,
+                 trim_rule=trim_rule, sorted_vocab=sorted_vocab, batch_words=batch_words, compute_loss=compute_loss, callbacks=callbacks,
+                 max_final_vocab=max_final_vocab)
+            return model
+        
+        except Exception as ex:
+            print(ex)
+            print("Error while creating word embeddings")
+            return None
+
+    def txtFileInput(fileName, size=100, alpha=0.025,
+                 max_vocab_size=None, sample=1e-3, seed=1, workers=3, min_alpha=0.0001,
+                 sg=1, hs=0, negative=5, ns_exponent=0.75, cbow_mean=1, hashfxn=hash, iter=5, null_word=0,
+                 trim_rule=None, sorted_vocab=1, batch_words=10000, compute_loss=False, callbacks=(),
+                 max_final_vocab=None):
+        #Input as text file
+        try:
+            sentences = []
+            #Checking if file is present or not
+            if os.path.exists(fileName):
+                with open(fileName) as fh:
+                    for line in fh:
+                    #Split Paragraph on basis of '.' or ? or !.
+
+                        for l in re.split(r"\.|\?|\!",line):
+                            sentences.append(l)
+                return WordRepresentations.POSPairWordEmbeddings(sentences, size= size, alpha=alpha,
+                 max_vocab_size=max_vocab_size, sample=sample, seed=seed, workers=workers, min_alpha=min_alpha,
+                 sg=sg, hs=hs, negative=negative, ns_exponent=ns_exponent, cbow_mean=cbow_mean, hashfxn=hashfxn, iter=iter, null_word=null_word,
+                 trim_rule=trim_rule, sorted_vocab=sorted_vocab, batch_words=batch_words, compute_loss=compute_loss, callbacks=callbacks,
+                 max_final_vocab=max_final_vocab)
+            else:
+                print("The file does not exist")
+                return None
+        
+        except Exception as ex:
+            print(ex)
+            print("Error while taking .txt file as input")
+            return None
