@@ -21,6 +21,8 @@ The representation of data is done in form of word pairs. At a time, the relatio
 
 Word pairs are generated with the refrence to the whole text. Word pairs can be understood when the whole sentence is taken into context.
 
+Generate better word embeddings for represenatation with POSPair.
+
 ## GETTING STARTED:
 ### PREREQUISITES:
 1. Python 3.0 or higher
