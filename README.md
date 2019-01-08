@@ -41,6 +41,7 @@ Generate better word embeddings for represenatation with POSPair.
     1. POSPair.WordPairs(string)                [Input is string, Returns word-pairs]
     2. POSPair.WordPairsWithValues(string)      [Input is string, Returns word-pairs with context]
     3. POSPair.separateWordPair(string)         [Input is word-pair, Returns list of words from word-pair]
+For word embeddings:
     4. POSPair.POSPairWordEmbeddings(sentences) [Input should be List of sentences(string); also contains multiple parameters, Returns trained Word2Vec model]
     5. POSPair.txtFileInput("FileName")         [Input should be file name; also contains multiple parameters, Returns trained Word2Vec model]
      (POSPair.POSPairWordEmbeddings & POSPair.txtFileInput contain same parameters as Word2Vec model, except for min_count, window and corpus_file)
