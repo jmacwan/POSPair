@@ -34,11 +34,14 @@ Word pairs are generated with the refrence to the whole text. Word pairs can be 
 
 [**Note**: Keep the Stanford CoreNLP Server port: 9000]
 
-3. POSPair Functions:
+#### POSPair Functions:
 ```
-    1. POSPair.WordPairs(string) [Returns word-pairs]
-    2. POSPair.WordPairsWithValues(string) [Returns word-pairs with context]
-    3. POSPair.separateWordPair(string) [String should be word-pair][Returns list of words from word-pair]
+    1. POSPair.WordPairs(string)                [Input is string, Returns word-pairs]
+    2. POSPair.WordPairsWithValues(string)      [Input is string, Returns word-pairs with context]
+    3. POSPair.separateWordPair(string)         [Input is word-pair, Returns list of words from word-pair]
+    4. POSPair.POSPairWordEmbeddings(sentences) [Input should be List of sentences(string); also contains multiple parameters, Returns trained Word2Vec model]
+    5. POSPair.txtFileInput("FileName")         [Input should be file name; also contains multiple parameters, Returns trained Word2Vec model]
+     (POSPair.POSPairWordEmbeddings & POSPair.txtFileInput contain same parameters as Word2Vec model, except for min_count, window and corpus_file)
 ```
 Example:
 ```Python
@@ -54,13 +57,11 @@ Output:
 'representation a'
 'representation simplifying'
 ```
-
-Get in touch at pospair.contact@gmail.com for any queries or help.
-
 ### BUILT WITH:
 1. Python
 2. Stanford Core NLP
 3. Pycorenlp
+4. Gensim (Word2Vec)
 
 ### CONTRIBUTING:
 Read [CONTRIBUTING.md](https://github.com/jmacwan/POSPair/blob/master/CONTRIBUTING.md)
@@ -70,9 +71,5 @@ Jim Macwan
 
 ### LICENSE:
 [GNU General Public License v3.0](https://github.com/jmacwan/POSPair/blob/master/LICENSE)
-
-### ACKNOWLEDGMENTS:
-1. **Stanford Core NLP**
-2. **Pycorenlp**
 
 _Please provide feedback or get in touch at pospair.contact@gmail.com_
