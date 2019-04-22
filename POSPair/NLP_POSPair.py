@@ -120,7 +120,7 @@ class NLP:
         try:
             #Parsing Text
             annotatedObject = nlp.annotate(text, properties = {
-            'annotators' : 'parse,pos,tokenize,ssplit',
+            'annotators' : 'depparse',
             'outputFormat' : 'json'
             })
             
@@ -153,7 +153,7 @@ class NLP:
         try:
             #Parsing text
             annotatedObject = nlp.annotate(text, properties = {
-            'annotators' : 'tokenize,pos,ssplit,parse',
+            'annotators' : 'depparse',
             'outputFormat' : 'json'
             })
            
@@ -205,7 +205,7 @@ class NLP:
     def __subjectNoun(text):
         #Returns subject noun
         annotatedObject = nlp.annotate(text, properties = {
-            'annotators' : 'parse,pos,tokenize,ssplit',
+            'annotators' : 'depparse',
             'outputFormat' : 'json'
         })
         i = 0
@@ -294,7 +294,7 @@ class NLP:
         #Converting text into sentences
         try:
             annotatedObject = nlp.annotate(text, properties = {
-            'annotators' : 'tokenize,parse,pos,depparse',
+            'annotators' : 'depparse',
             'outputFormat' : 'json'
             })
             sentences = []
@@ -314,7 +314,7 @@ class NLP:
         #Converting into words
         try:
             annotatedObject = nlp.annotate(text, properties = {
-            'annotators' : 'tokenize,parse,pos,depparse',
+            'annotators' : 'depparse',
             'outputFormat' : 'json'
             })
             Words = []
@@ -390,7 +390,7 @@ class WordRepresentations:
         #Converting into sentences
         try:
             annotatedObject = nlp.annotate(text, properties = {
-            'annotators' : 'tokenize,parse,pos,depparse',
+            'annotators' : 'depparse',
             'outputFormat' : 'json'
             })
             Words = []
