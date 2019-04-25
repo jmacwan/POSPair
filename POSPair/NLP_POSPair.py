@@ -14,14 +14,14 @@ MAX_WORDS_IN_BATCH = 10000
 
 class NLP:
     
-    def __pos(annotatedObject, word):
+    def __pos(index, annotatedObject, word):
         #fetching part-of-speech of specific word from annotated parsed sentence (Further on using pos = part-of-speech)
         try:
             i = 0
             while True:
                 #Finding pos of word from annotated object
-                if(annotatedObject['sentences'][0]['tokens'][i]['originalText'] == word): 
-                    partOfSpeech = annotatedObject['sentences'][0]['tokens'][i]['pos']
+                if(annotatedObject['sentences'][index]['tokens'][i]['originalText'] == word): 
+                    partOfSpeech = annotatedObject['sentences'][index]['tokens'][i]['pos']
                     break
                 else:
                     i = i + 1     
@@ -36,6 +36,7 @@ class NLP:
             conjunction = ['CC']
             interjection = ['UH']
             others = ['SYM']
+            notations = [",",".","?",";",":","<",">","/","'",'"','!','&']
         
             if(partOfSpeech in noun):
                 return 'Noun'
@@ -55,19 +56,20 @@ class NLP:
                 return 'Interjection'
             if(partOfSpeech in others):
                 return 'null'
+            if(partOfSpeech in notations):
+                return 'null'
             if not partOfSpeech: #if pos is blank or error
                 return 'null'
         except:
-            print("Error finding part-of-speech of given word. Word may not belong to the Annotated Object")
             return None
 
-    def __findPairingWord(annotatedObject, dependantWord, text):
+    def __findPairingWord(index, annotatedObject, dependantWord, text):
         #Fetching pairing word of the dependant word and check if it matches pos relation
         try:
             #Parsing through annotated sentence to find governor word
             for i in range(len(text)):
-                if(annotatedObject['sentences'][0]['basicDependencies'][i]['dependentGloss'] == dependantWord):
-                    governerWord = annotatedObject['sentences'][0]['basicDependencies'][i]['governorGloss']
+                if(annotatedObject['sentences'][index]['basicDependencies'][i]['dependentGloss'] == dependantWord):
+                    governerWord = annotatedObject['sentences'][index]['basicDependencies'][i]['governorGloss']
                     break
             
             notations = [",",".","?",";",":","<",">","/","'",'"','!','&']
@@ -75,8 +77,8 @@ class NLP:
             if (governerWord == 'ROOT' or governerWord in notations):
                 return None
 
-            dependantWordPos = NLP.__pos(annotatedObject, dependantWord)
-            governerWordPos = NLP.__pos(annotatedObject, governerWord)
+            dependantWordPos = NLP.__pos(index, annotatedObject, dependantWord)
+            governerWordPos = NLP.__pos(index, annotatedObject, governerWord)
 
             #According to relation between words based on part-of-speech semantic understanding, validating word pair
             if(dependantWordPos == 'Noun'):
@@ -86,7 +88,7 @@ class NLP:
             if(dependantWordPos == 'Adjective'):
                 if(governerWordPos == 'Noun' or 'Adverb' or 'Pronoun'):
                     return governerWord
-        
+
             if(dependantWordPos == 'Verb'):
                 if(governerWordPos == 'Adverb' or 'Noun' or 'Pronoun'):
                     return governerWord
@@ -108,34 +110,26 @@ class NLP:
                     return governerWord
             else:
                 #If not related, pass governor as dependant in same function, iterate the loop, fetch it's governor word and validate if relation exists
-                NLP.__findPairingWord(annotatedObject, governerWord, text)
+                NLP.__findPairingWord(index, annotatedObject, governerWord, text)
             
         except:
-            print("Error while fetching pairing word")
-            print("Sentence - " + text)
             return None
 
-    def __createWordPairWithValues(text):
+    def __createWordPairWithValues(index, annotatedObject, text):
         #Creating Word pairs with values #Text should be just one sentence
         try:
-            #Parsing Text
-            annotatedObject = nlp.annotate(text, properties = {
-            'annotators' : 'depparse',
-            'outputFormat' : 'json'
-            })
-            
-            tokens = NLP.__SentenceIntoWords(text)
+            tokens = NLP.__SentenceIntoWords(index, annotatedObject, text)
             wordPairObjects = []
             
             #Fetching word pairs
-            wordPairs = NLP.__createWordPairs(text)
+            wordPairs = NLP.__createWordPairs(index, annotatedObject, text)
             
             #Iterating through each word pair to create objects
             for pair in wordPairs:
                 contextPairs = []
                 words = NLP.separateWordValue(pair)
-                partOfSpeechOfWord = NLP.__pos(annotatedObject, words[0])
-                partOfSpeechOfValue = NLP.__pos(annotatedObject, words[1])
+                partOfSpeechOfWord = NLP.__pos(index, annotatedObject, words[0])
+                partOfSpeechOfValue = NLP.__pos(index, annotatedObject, words[1])
                 contextPairs.extend(wordPairs)
                 context = NLP.__backgroundValues(contextPairs, pair)
                    
@@ -144,39 +138,33 @@ class NLP:
         except Exception as ex:
             if(str(ex.args) == "('list index out of range',)"):
                 return wordPairObjects
-            print("Error in sentence parsing OR Word not present in sentence parsed")
+            print("Error in sentence parsing")
             print("Sentence - " + text)
             return None
         
-    def __createWordPairs(text):
+    def __createWordPairs(index, annotatedObject, text):
         #Creating Word pairs #Text should be just one sentence
         try:
-            #Parsing text
-            annotatedObject = nlp.annotate(text, properties = {
-            'annotators' : 'depparse',
-            'outputFormat' : 'json'
-            })
-           
             notations = [",",".","?",";",":","<",">","/","'",'"']
             wordPairs = []
             #Parsing through whole sentence & fetching relation between words
             for i in range(len(text)):
-                dependantWord = annotatedObject['sentences'][0]['basicDependencies'][i]['dependentGloss']
-                if (dependantWord in notations):
+                dependantWord = annotatedObject['sentences'][index]['basicDependencies'][i]['dependentGloss']
+                if(dependantWord in notations):
                     continue
                 #Fetching governor word of the dependant word
-                governorWord = NLP.__findPairingWord(annotatedObject,dependantWord, text)
+                governorWord = NLP.__findPairingWord(index, annotatedObject, dependantWord, text)
                 if(governorWord == None):
                     continue
                 #Organizing the word pair according to pos word relations
-                syntacticParsed = NLP.__POSWordRelation(annotatedObject, dependantWord + " " + governorWord)
+                syntacticParsed = NLP.__POSWordRelation(index, annotatedObject, dependantWord + " " + governorWord)
                 
                 wordPairs.append(syntacticParsed)
             return wordPairs
         except Exception as ex:
             if(str(ex.args) == "('list index out of range',)"):
                 return wordPairs
-            print("Error in sentence parsing OR Word may not be present in sentence parsed")
+            print("Error in sentence parsing")
             print("Sentence - " + text)
             return None
 
@@ -236,14 +224,14 @@ class NLP:
             print("Error while seperating word values of pair -" + text)
             return None
 
-    def __POSWordRelation(annotatedObject, text):
+    def __POSWordRelation(index, annotatedObject, text):
         #Text as word-value pair
         #Organizing words in word pair as per part-of-speech semantics
         try:
             #Seperating word pair
             words = NLP.separateWordValue(text)
-            posWord1 = NLP.__pos(annotatedObject, words[0])
-            posWord2 = NLP.__pos(annotatedObject, words[1])
+            posWord1 = NLP.__pos(index, annotatedObject, words[0])
+            posWord2 = NLP.__pos(index, annotatedObject, words[1])
 
             #Organizing words
             if(posWord1 == 'Noun'):
@@ -290,38 +278,30 @@ class NLP:
             print("Error while structuring POS relation -" + text)        
             return None
 
-    def __TextIntoSentences(text):
+    def __TextIntoSentences(annotatedObject, text):
         #Converting text into sentences
         try:
-            annotatedObject = nlp.annotate(text, properties = {
-            'annotators' : 'depparse',
-            'outputFormat' : 'json'
-            })
             sentences = []
             
             #Iterating through annotated object to create sentences
             for i in range(len(text)):
-                sentence = " ".join(t["word"] for t in annotatedObject['sentences'][i]["tokens"])  
+                sentence = " ".join(t["originalText"] for t in annotatedObject['sentences'][i]["tokens"])  
                 sentences.append(sentence)
             return sentences
         except Exception as ex:
             if(str(ex.args) == "('list index out of range',)"):
                 return sentences
-            print("Error while annotating sentence - " + text)
+            print("Error while converting text into sentences - " + text)
             return None
 
-    def __SentenceIntoWords(text):
+    def __SentenceIntoWords(index, annotatedObject, text):
         #Converting into words
         try:
-            annotatedObject = nlp.annotate(text, properties = {
-            'annotators' : 'depparse',
-            'outputFormat' : 'json'
-            })
             Words = []
             
             #Iterating through annotated object to create list of words
             for i in range(len(text)):
-                Words.append(annotatedObject['sentences'][0]['tokens'][i]['originalText'])  
+                Words.append(annotatedObject['sentences'][index]['tokens'][i]['originalText'])  
             return Words
         except Exception as ex:
             if(str(ex.args) == "('list index out of range',)"):
@@ -334,12 +314,17 @@ class NLP:
         try:
             #Validating input
             if(NLP.__inputValidation(text) == True):
+                #Parsing text
+                annotatedObject = nlp.annotate(text, properties = {
+                'annotators' : 'depparse',
+                'outputFormat' : 'json'
+                })
                 #Converting text into sentences
-                sentences = NLP.__TextIntoSentences(text)
+                sentences = NLP.__TextIntoSentences(annotatedObject, text)
                 wordPairs = []
                 #Iterating through each sentence
-                for sentence in sentences:
-                    wordPairs.append(NLP.__createWordPairs(sentence))
+                for index, sentence in enumerate(sentences):
+                    wordPairs.append(NLP.__createWordPairs(index, annotatedObject, sentence))
                 return wordPairs
         except Exception as ex:
             if(str(ex.args) == "('Input is empty',)" or "('Only 500 characters allowed',)"):
@@ -352,12 +337,17 @@ class NLP:
         try:
             #Validating input
             if(NLP.__inputValidation(text) == True):
+                #Parsing text
+                annotatedObject = nlp.annotate(text, properties = {
+                'annotators' : 'depparse',
+                'outputFormat' : 'json'
+                })
                 #Converting text into sentences
-                sentences = NLP.__TextIntoSentences(text)
+                sentences = NLP.__TextIntoSentences(annotatedObject, text)
                 wordPairs = []
                 #Iterating through each sentence
-                for sentence in sentences:
-                    wordPairs.append(NLP.__createWordPairWithValues(sentence))
+                for index, sentence in enumerate(sentences):
+                    wordPairs.append(NLP.__createWordPairWithValues(index, annotatedObject, sentence))
                 return wordPairs
         except Exception as ex:
             if(str(ex.args) == "('Input is empty',)" or "('Only 500 characters allowed',)"):
@@ -385,25 +375,6 @@ class NLP:
                 return None
 
 class WordRepresentations:
-
-    def __SentenceIntoWords(text):
-        #Converting into sentences
-        try:
-            annotatedObject = nlp.annotate(text, properties = {
-            'annotators' : 'depparse',
-            'outputFormat' : 'json'
-            })
-            Words = []
-            
-            #Iterating through annotated object to create sentences
-            for i in range(len(text)):
-                Words.append(annotatedObject['sentences'][0]['tokens'][i]['originalText'])  
-            return Words
-        except Exception as ex:
-            if(str(ex.args) == "('list index out of range',)"):
-                return Words
-            print("Error while annotating sentence - " + text)
-            return None
 
     def POSPairWordEmbeddings(sentences=None, size=100, alpha=0.025,
                  max_vocab_size=None, sample=1e-3, seed=1, workers=3, min_alpha=0.0001,
@@ -433,7 +404,7 @@ class WordRepresentations:
             for listOfPairs in pospairs:
                 for pairs in listOfPairs:
                     for pair in pairs:
-                        tokenizedPOSPairs.append(WordRepresentations.__SentenceIntoWords(pair))
+                        tokenizedPOSPairs.append(str(pair).split())
 
             tokenizedPOSPairs = [e for e in tokenizedPOSPairs if e is not None]
             
